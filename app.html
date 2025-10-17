@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FGEngine - Editor & Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0f0f11;
+      color: white;
+      overflow: hidden;
+    }
+
+    .header {
+      background-color: #2d2d30;
+      padding: 10px 20px;
+      border-bottom: 1px solid #3e3e42;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 50px;
+      box-sizing: border-box;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .header .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .header button {
+      background-color: #0e639c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .header button:hover {
+      background-color: #1177bb;
+    }
+
+    .header button.active {
+      background-color: #007acc;
+    }
+
+    .main-container {
+      display: flex;
+      height: calc(100vh - 70px);
+    }
+
+    .panel {
+      flex: 1;
+      position: relative;
+      background-color: #1e1e1e;
+      border-right: 1px solid #3e3e42;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel:last-child {
+      border-right: none;
+    }
+
+    .panel-header {
+      background-color: #2d2d30;
+      padding: 8px 16px;
+      border-bottom: 1px solid #3e3e42;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .panel-content {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .app-canvas {
+      background-color: #000;
+      border: 1px solid #3e3e42;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: #888;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #3e3e42;
+      border-top: 4px solid #007acc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .single-panel {
+      border-right: none;
+    }
+
+    .error-message {
+      color: #f48771;
+      background-color: #332222;
+      padding: 20px;
+      border-radius: 4px;
+      margin: 20px;
+      border-left: 4px solid #f48771;
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+      }
+      
+      .panel {
+        border-right: none;
+        border-bottom: 1px solid #3e3e42;
+      }
+      
+      .panel:last-child {
+        border-bottom: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>FGEngine - Editor & Game</h1>
+    <div class="controls">
+      <button id="editorBtn" class="active">Editor</button>
+      <button id="gameBtn">Game</button>
+      <button id="bothBtn">Both</button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <!-- Editor Panel -->
+    <div id="editorPanel" class="panel">
+      <div class="panel-header">Editor</div>
+      <div class="panel-content">
+        <div class="canvas-container">
+          <canvas id="editorCanvas" class="app-canvas" width="800" height="600"></canvas>
+          <div id="editorLoading" class="loading-indicator">
+            <div class="spinner"></div>
+            <div>Loading Editor...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Panel -->
+    <div id="gamePanel" class="panel hidden">
+      <div class="panel-header">Game</div>
+      <div class="panel-content">
+        <div class="canvas-container">
+          <canvas id="gameCanvas" class="app-canvas" width="800" height="600"></canvas>
+          <div id="gameLoading" class="loading-indicator">
+            <div class="spinner"></div>
+            <div>Loading Game...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Panel management
+    const editorBtn = document.getElementById('editorBtn');
+    const gameBtn = document.getElementById('gameBtn');
+    const bothBtn = document.getElementById('bothBtn');
+    const editorPanel = document.getElementById('editorPanel');
+    const gamePanel = document.getElementById('gamePanel');
+
+    function setActiveButton(activeBtn) {
+      [editorBtn, gameBtn, bothBtn].forEach(btn => btn.classList.remove('active'));
+      activeBtn.classList.add('active');
+    }
+
+    function showEditor() {
+      setActiveButton(editorBtn);
+      editorPanel.classList.remove('hidden');
+      gamePanel.classList.add('hidden');
+      editorPanel.classList.add('single-panel');
+      resizeCanvases();
+    }
+
+    function showGame() {
+      setActiveButton(gameBtn);
+      editorPanel.classList.add('hidden');
+      gamePanel.classList.remove('hidden');
+      gamePanel.classList.add('single-panel');
+      resizeCanvases();
+    }
+
+    function showBoth() {
+      setActiveButton(bothBtn);
+      editorPanel.classList.remove('hidden', 'single-panel');
+      gamePanel.classList.remove('hidden', 'single-panel');
+      resizeCanvases();
+    }
+
+    // Canvas management
+    const editorCanvas = document.getElementById('editorCanvas');
+    const gameCanvas = document.getElementById('gameCanvas');
+    const editorLoading = document.getElementById('editorLoading');
+    const gameLoading = document.getElementById('gameLoading');
+
+    function resizeCanvases() {
+      setTimeout(() => {
+        [editorCanvas, gameCanvas].forEach(canvas => {
+          const container = canvas.parentElement;
+          const rect = container.getBoundingClientRect();
+          const maxWidth = rect.width - 40;
+          const maxHeight = rect.height - 40;
+          
+          // Maintain aspect ratio
+          const aspectRatio = canvas.width / canvas.height;
+          let newWidth = maxWidth;
+          let newHeight = newWidth / aspectRatio;
+          
+          if (newHeight > maxHeight) {
+            newHeight = maxHeight;
+            newWidth = newHeight * aspectRatio;
+          }
+          
+          canvas.style.width = newWidth + 'px';
+          canvas.style.height = newHeight + 'px';
+        });
+      }, 100);
+    }
+
+    // Event listeners
+    editorBtn.addEventListener('click', showEditor);
+    gameBtn.addEventListener('click', showGame);
+    bothBtn.addEventListener('click', showBoth);
+    window.addEventListener('resize', resizeCanvases);
+
+    // WebAssembly loading functions
+    async function loadEditorWasm() {
+      try {
+        editorLoading.style.display = 'flex';
+        
+        // This is where you would load your WebAssembly module
+        // Example:
+        // const go = new Go();
+        // const result = await WebAssembly.instantiateStreaming(fetch("editor.wasm"), go.importObject);
+        // go.run(result.instance);
+        
+        // For now, just simulate loading
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        editorLoading.style.display = 'none';
+        console.log('Editor WASM loaded');
+      } catch (error) {
+        editorLoading.innerHTML = `<div class="error-message">Failed to load editor: ${error.message}</div>`;
+        console.error('Failed to load editor WASM:', error);
+      }
+    }
+
+    async function loadGameWasm() {
+      try {
+        gameLoading.style.display = 'flex';
+        
+        // This is where you would load your WebAssembly module
+        // Example:
+        // const go = new Go();
+        // const result = await WebAssembly.instantiateStreaming(fetch("game.wasm"), go.importObject);
+        // go.run(result.instance);
+        
+        // For now, just simulate loading
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        gameLoading.style.display = 'none';
+        console.log('Game WASM loaded');
+      } catch (error) {
+        gameLoading.innerHTML = `<div class="error-message">Failed to load game: ${error.message}</div>`;
+        console.error('Failed to load game WASM:', error);
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      resizeCanvases();
+      
+      // Load WebAssembly modules
+      loadEditorWasm();
+      // Game WASM will be loaded when the game panel is first shown
+      
+      // Set up observer to load game when it becomes visible
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.target === gamePanel && entry.isIntersecting && gameLoading.style.display !== 'none') {
+            loadGameWasm();
+          }
+        });
+      });
+      
+      observer.observe(gamePanel);
+    });
+  </script>
+</body>
+</html>

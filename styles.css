@@ -1,0 +1,111 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0 auto;
+  padding: 1.25rem;
+  line-height: 1.6;
+  background-color: #0f0f11;
+}
+
+.container {
+  background: #3c3b47;
+  padding: 2rem;
+  border-radius: 0.625rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 0.625rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: white;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  color: white;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0.625rem;
+  margin-top: 2rem;
+}
+
+.project {
+  margin: 1rem 0;
+  padding: 0.625rem;
+  background: #f9f9f9;
+  border-radius: 0.3125rem;
+  border-left: 4px solid #007acc;
+}
+
+.project a {
+  text-decoration: none;
+  color: #007acc;
+  font-weight: 500;
+}
+
+.project a:hover {
+  text-decoration: underline;
+}
+
+.description {
+  color: #666;
+  margin-top: 0.3125rem;
+  font-size: 0.875rem;
+}
+
+.github-link {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #ddd;
+}
+
+.github-link a {
+  color: #007acc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.play-buttons {
+  margin-top: 0.625rem;
+  display: flex;
+  gap: 0.625rem;
+}
+
+.play-btn {
+  padding: 0.5rem 1rem;
+  background: #007acc;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.play-btn:hover {
+  background: #005a99;
+  text-decoration: none;
+  color: white !important;
+}
+
+.play-btn.editor {
+  background: #28a745;
+}
+
+.play-btn.editor:hover {
+  background: #1e7e34;
+  color: white !important;
+}
+
+.play-btn.app {
+  background: #6f42c1;
+}
+
+.play-btn.app:hover {
+  background: #5a32a3;
+  color: white !important;
+}
